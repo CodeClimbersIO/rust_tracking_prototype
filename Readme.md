@@ -16,6 +16,7 @@ Tracks the current active window
 
 2. Build the project:
    ```bash
+   bash ./scripts/build-mac.sh
    cargo build
    ```
 
@@ -25,7 +26,8 @@ Tracks the current active window
 
 To run the project in development mode:
    ```bash
-   cargo run
+   bash ./scripts/build-mac.sh # build the mac dylib required for macos
+   cargo dev
    ```
 
 ### Release Mode
@@ -38,8 +40,10 @@ To run the project in release mode:
 
 - `src/`: Source code for the project.
   - `main.rs`: Main entry point of the program.
-- `Cargo.toml`: Project configuration file.
-- `Cargo.lock`: Project dependency lock file. 
+- `bindings/`: Bindings for the project.
+  - `macos/`: MacOS bindings written in Swift.
+- `scripts/`: Scripts for the project.
+  - `build-mac.sh`: Builds the MacOS dylib.
 
 ## Testing
 
