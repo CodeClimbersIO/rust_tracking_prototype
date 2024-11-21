@@ -26,6 +26,7 @@ Tracks the current active window
 
 To run the project in development mode:
    ```bash
+   cargo install cargo-watch
    bash ./scripts/build-mac.sh # build the mac dylib required for macos
    cargo dev
    ```
