@@ -24,7 +24,7 @@ fn main() {
         loop {
             process_events();
             // Small sleep to prevent excessive CPU usage
-            std::thread::sleep(std::time::Duration::from_millis(1000));
+            std::thread::sleep(std::time::Duration::from_millis(16)); // ~60 FPS
         }
     }
 }
