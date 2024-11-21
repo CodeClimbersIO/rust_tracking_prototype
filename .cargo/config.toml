@@ -1,0 +1,4 @@
+[target.aarch64-apple-darwin]
+rustflags = ["-L./bindings/macos", "-lMouseMonitor"]
+[alias]
+dev = "watch -c -x run"
