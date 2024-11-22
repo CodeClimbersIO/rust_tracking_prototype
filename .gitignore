@@ -12,6 +12,7 @@ Release/
 !*.sln
 !*.vcxproj
 
+*.dylib
 
 release
 

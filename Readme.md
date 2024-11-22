@@ -46,16 +46,4 @@ To run the project in release mode:
 - `scripts/`: Scripts for the project.
   - `build-mac.sh`: Builds the MacOS dylib.
 
-## Testing
-
-Run the tests:
-   ```bash
-   cargo test
-   ```
-Run the tests with output:
-   ```bash
-   cargo test -- --nocapture
-   ```  
-
-
 
