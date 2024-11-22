@@ -1,8 +1,30 @@
+#[repr(C)]
+#[derive(Debug)]
+pub enum MouseEventType {
+    MouseMove = 0,
+    MouseLeftDown,
+    MouseLeftUp,
+    MouseRightDown,
+    MouseRightUp,
+    MouseMiddleDown,
+    MouseMiddleUp,
+    MouseScroll,
+}
+
+#[repr(C)]
+#[derive(Debug)]
+pub struct MouseEventData {
+    pub x: f64,
+    pub y: f64,
+    pub event_type: MouseEventType,
+    pub scroll_delta: i32,
+}
+
 #[cfg(target_os = "macos")]
 #[link(name = "MouseMonitor")]
 extern "C" {
     fn initialize_cocoa();
-    fn start_mouse_monitoring(callback: extern "C" fn(f64, f64));
+    fn start_mouse_monitoring(callback: extern "C" fn(MouseEventData));
     fn process_events();
 }
 
@@ -10,13 +32,41 @@ extern "C" {
 #[link(name = "WindowsMonitor")]
 extern "C" {
     fn initialize_windows();
-    fn start_mouse_monitoring(callback: extern "C" fn(f64, f64));
+    fn start_mouse_monitoring(callback: extern "C" fn(MouseEventData));
     fn process_events();
     fn cleanup_windows();
 }
 
-extern "C" fn mouse_callback(x: f64, y: f64) {
-    println!("Mouse position: ({}, {})", x, y);
+extern "C" fn mouse_callback(data: MouseEventData) {
+    match data.event_type {
+        MouseEventType::MouseMove => {
+            println!("Mouse moved to: ({}, {})", data.x, data.y);
+        }
+        MouseEventType::MouseLeftDown => {
+            println!("Left button pressed at: ({}, {})", data.x, data.y);
+        }
+        MouseEventType::MouseLeftUp => {
+            println!("Left button released at: ({}, {})", data.x, data.y);
+        }
+        MouseEventType::MouseRightDown => {
+            println!("Right button pressed at: ({}, {})", data.x, data.y);
+        }
+        MouseEventType::MouseRightUp => {
+            println!("Right button released at: ({}, {})", data.x, data.y);
+        }
+        MouseEventType::MouseMiddleDown => {
+            println!("Middle button pressed at: ({}, {})", data.x, data.y);
+        }
+        MouseEventType::MouseMiddleUp => {
+            println!("Middle button released at: ({}, {})", data.x, data.y);
+        }
+        MouseEventType::MouseScroll => {
+            println!(
+                "Scroll event: delta={} at ({}, {})", 
+                data.scroll_delta, data.x, data.y
+            );
+        }
+    }
 }
 
 fn main() {

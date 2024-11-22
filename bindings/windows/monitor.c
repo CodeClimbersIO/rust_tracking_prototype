@@ -1,21 +1,83 @@
 #include <windows.h>
 #include <stdio.h>
 
-// Function pointer type for the callback
-typedef void (*MouseCallbackFn)(double x, double y);
+// Enum to identify mouse event types
+typedef enum {
+    MOUSE_MOVE = 0,
+    MOUSE_LEFT_DOWN,
+    MOUSE_LEFT_UP,
+    MOUSE_RIGHT_DOWN,
+    MOUSE_RIGHT_UP,
+    MOUSE_MIDDLE_DOWN,
+    MOUSE_MIDDLE_UP,
+    MOUSE_SCROLL
+} MouseEventType;
+
+// Struct to hold mouse event data
+typedef struct {
+    double x;
+    double y;
+    MouseEventType event_type;
+    int scroll_delta;
+} MouseEventData;
+
+// Updated callback function type
+typedef void (*MouseCallbackFn)(MouseEventData data);
+
 MouseCallbackFn g_callback = NULL;
 
 // Low-level mouse hook procedure
 LRESULT CALLBACK LowLevelMouseProc(int nCode, WPARAM wParam, LPARAM lParam) {
     if (nCode == HC_ACTION && g_callback != NULL) {
         MSLLHOOKSTRUCT* hookStruct = (MSLLHOOKSTRUCT*)lParam;
+        MouseEventData data = {0};
         
         // Convert screen coordinates to double
-        double x = (double)hookStruct->pt.x;
-        double y = (double)hookStruct->pt.y;
+        data.x = (double)hookStruct->pt.x;
+        data.y = (double)hookStruct->pt.y;
         
-        // Call the Rust callback with the mouse coordinates
-        g_callback(x, y);
+        // Determine the event type based on wParam
+        switch (wParam) {
+            case WM_MOUSEMOVE:
+                data.event_type = MOUSE_MOVE;
+                break;
+                
+            case WM_LBUTTONDOWN:
+                data.event_type = MOUSE_LEFT_DOWN;
+                break;
+                
+            case WM_LBUTTONUP:
+                data.event_type = MOUSE_LEFT_UP;
+                break;
+                
+            case WM_RBUTTONDOWN:
+                data.event_type = MOUSE_RIGHT_DOWN;
+                break;
+                
+            case WM_RBUTTONUP:
+                data.event_type = MOUSE_RIGHT_UP;
+                break;
+                
+            case WM_MBUTTONDOWN:
+                data.event_type = MOUSE_MIDDLE_DOWN;
+                break;
+                
+            case WM_MBUTTONUP:
+                data.event_type = MOUSE_MIDDLE_UP;
+                break;
+                
+            case WM_MOUSEWHEEL:
+                data.event_type = MOUSE_SCROLL;
+                // Get scroll delta (positive for scroll up, negative for scroll down)
+                data.scroll_delta = GET_WHEEL_DELTA_WPARAM(hookStruct->mouseData) / WHEEL_DELTA;
+                break;
+                
+            default:
+                return CallNextHookEx(NULL, nCode, wParam, lParam);
+        }
+        
+        // Call the callback with the mouse event data
+        g_callback(data);
     }
     
     return CallNextHookEx(NULL, nCode, wParam, lParam);
@@ -23,9 +85,7 @@ LRESULT CALLBACK LowLevelMouseProc(int nCode, WPARAM wParam, LPARAM lParam) {
 
 HHOOK g_mouseHook = NULL;
 
-// Initialize Windows-specific resources
 __declspec(dllexport) void initialize_windows(void) {
-    // Nothing specific needed for initialization
 }
 
 // Start monitoring mouse movements
@@ -37,13 +97,12 @@ __declspec(dllexport) void start_mouse_monitoring(MouseCallbackFn callback) {
         GetModuleHandle(NULL),
         0
     );
-
+    
     if (g_mouseHook == NULL) {
         fprintf(stderr, "Failed to set mouse hook. Error code: %lu\n", GetLastError());
     }
 }
 
-// Process Windows messages
 __declspec(dllexport) void process_events(void) {
     MSG msg;
     while (PeekMessage(&msg, NULL, 0, 0, PM_REMOVE)) {
@@ -52,7 +111,6 @@ __declspec(dllexport) void process_events(void) {
     }
 }
 
-// Cleanup function
 __declspec(dllexport) void cleanup_windows(void) {
     if (g_mouseHook != NULL) {
         UnhookWindowsHookEx(g_mouseHook);
