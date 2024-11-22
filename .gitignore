@@ -1,6 +1,16 @@
 /target
 
-.vs
+# Visual Studio files to ignore
+.vs/
+x64/
+Debug/
+Release/
+*.user
+*.filters
+
+# But keep these files
+!*.sln
+!*.vcxproj
 
 
 release

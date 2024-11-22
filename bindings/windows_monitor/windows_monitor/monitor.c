@@ -1,25 +1,7 @@
+#define MONITOR_EXPORTS
+#include "monitor.h"
 #include <windows.h>
 #include <stdio.h>
-
-// Enum to identify mouse event types
-typedef enum {
-    MOUSE_MOVE = 0,
-    MOUSE_LEFT_DOWN,
-    MOUSE_LEFT_UP,
-    MOUSE_RIGHT_DOWN,
-    MOUSE_RIGHT_UP,
-    MOUSE_MIDDLE_DOWN,
-    MOUSE_MIDDLE_UP,
-    MOUSE_SCROLL
-} MouseEventType;
-
-// Struct to hold mouse event data
-typedef struct {
-    double x;
-    double y;
-    MouseEventType event_type;
-    int scroll_delta;
-} MouseEventData;
 
 // Updated callback function type
 typedef void (*MouseCallbackFn)(MouseEventData data);
