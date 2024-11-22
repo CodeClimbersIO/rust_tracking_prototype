@@ -1,20 +1,74 @@
 import Cocoa
 
+// Make the enum accessible from C by adding a @objc attribute
+@objc public enum MouseEventType: Int32 {
+    case mouseMove = 0
+    case mouseLeftDown
+    case mouseLeftUp
+    case mouseRightDown
+    case mouseRightUp
+    case mouseMiddleDown
+    case mouseMiddleUp
+    case mouseScroll
+}
+
 @_cdecl("start_mouse_monitoring")
-public func startMouseMonitoring(callback: @escaping @convention(c) (Double, Double) -> Void) {
-    // Ensure we have a reference to the app
+public func startMouseMonitoring(callback: @escaping @convention(c) (Double, Double, Int32, Int32) -> Void) {
     let app = NSApplication.shared
     
-    // Create and store monitor to prevent it from being deallocated
-    let monitor = NSEvent.addGlobalMonitorForEvents(matching: .mouseMoved) { event in
-        let point = event.locationInWindow
-        callback(point.x, point.y)
+    let moveMonitor = NSEvent.addGlobalMonitorForEvents(matching: .mouseMoved) { event in
+        callback(event.locationInWindow.x,
+                event.locationInWindow.y,
+                MouseEventType.mouseMove.rawValue,
+                0)
     }
     
-    // Store the monitor reference to keep it alive
-    if let monitor = monitor {
-        objc_setAssociatedObject(app, "mouseMonitor", monitor, .OBJC_ASSOCIATION_RETAIN)
+    let clickMonitor = NSEvent.addGlobalMonitorForEvents(matching: [.leftMouseDown, .leftMouseUp,
+                                                                   .rightMouseDown, .rightMouseUp,
+                                                                   .otherMouseDown, .otherMouseUp]) { event in
+        let eventType: MouseEventType
+        switch event.type {
+        case .leftMouseDown:   eventType = .mouseLeftDown
+        case .leftMouseUp:     eventType = .mouseLeftUp
+        case .rightMouseDown:  eventType = .mouseRightDown
+        case .rightMouseUp:    eventType = .mouseRightUp
+        case .otherMouseDown:  eventType = .mouseMiddleDown
+        case .otherMouseUp:    eventType = .mouseMiddleUp
+        default:               return
+        }
+        
+        callback(event.locationInWindow.x,
+                event.locationInWindow.y,
+                eventType.rawValue,
+                0)
     }
+    
+    let scrollMonitor = NSEvent.addGlobalMonitorForEvents(matching: .scrollWheel) { event in
+        callback(event.locationInWindow.x,
+                event.locationInWindow.y,
+                MouseEventType.mouseScroll.rawValue,
+                Int32(event.scrollingDeltaY))
+    }
+    
+    // Store monitor references
+    if let moveMonitor = moveMonitor,
+       let clickMonitor = clickMonitor,
+       let scrollMonitor = scrollMonitor {
+        let monitors = [moveMonitor, clickMonitor, scrollMonitor]
+        objc_setAssociatedObject(app, "mouseMonitors", monitors, .OBJC_ASSOCIATION_RETAIN)
+    }
+}
+
+// Keep the enum for internal use
+public enum MouseEventType: Int32 {
+    case mouseMove = 0
+    case mouseLeftDown
+    case mouseLeftUp
+    case mouseRightDown
+    case mouseRightUp
+    case mouseMiddleDown
+    case mouseMiddleUp
+    case mouseScroll
 }
 
 @_cdecl("initialize_cocoa")

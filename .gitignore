@@ -2,7 +2,7 @@
 
 .vs
 
-.dylib
+*.dylib
 
 release
 
