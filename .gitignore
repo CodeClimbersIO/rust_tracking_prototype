@@ -17,3 +17,9 @@ Release/
 release
 
 *.obj
+
+
+# keep git from changing line endings on windows
+* text=auto eol=lf
+*.{cmd,[cC][mM][dD]} text eol=crlf
+*.{bat,[bB][aA][tT]} text eol=crlf

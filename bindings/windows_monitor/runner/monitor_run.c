@@ -4,6 +4,7 @@
 #include <stdbool.h>
 #include "monitor.h"
 
+// Test callback function
 void test_callback(MouseEventData data) {
     const char* event_names[] = {
         "MOUSE_MOVE",
@@ -38,7 +39,7 @@ int main() {
     // Main event loop
     while (1) {
         process_events();
-        Sleep(10); // Small sleep to prevent high CPU usage
+        Sleep(100); // Small sleep to prevent high CPU usage
     }
 
     // Cleanup (note: this won't be reached normally, you'll need to Ctrl+C)
