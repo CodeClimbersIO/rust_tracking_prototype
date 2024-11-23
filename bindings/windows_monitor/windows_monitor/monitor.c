@@ -3,65 +3,64 @@
 #include <windows.h>
 #include <stdio.h>
 
-// Updated callback function type
-typedef void (*MouseCallbackFn)(MouseEventData data);
-
 MouseCallbackFn g_callback = NULL;
 
 // Low-level mouse hook procedure
 LRESULT CALLBACK LowLevelMouseProc(int nCode, WPARAM wParam, LPARAM lParam) {
     if (nCode == HC_ACTION && g_callback != NULL) {
         MSLLHOOKSTRUCT* hookStruct = (MSLLHOOKSTRUCT*)lParam;
-        MouseEventData data = {0};
-        
-        // Convert screen coordinates to double
-        data.x = (double)hookStruct->pt.x;
-        data.y = (double)hookStruct->pt.y;
-        
-        // Determine the event type based on wParam
+        double x = (double)hookStruct->pt.x;
+        double y = (double)hookStruct->pt.y;
+                int event_type = 0;  // Default to MOUSE_MOVE
+        int scroll_delta = 0;
         switch (wParam) {
             case WM_MOUSEMOVE:
-                data.event_type = MOUSE_MOVE;
+                event_type = MOUSE_MOVE;
+                printf("Mouse Move - ");
                 break;
                 
             case WM_LBUTTONDOWN:
-                data.event_type = MOUSE_LEFT_DOWN;
+                event_type = MOUSE_LEFT_DOWN;
+                printf("Left Down - ");
                 break;
                 
             case WM_LBUTTONUP:
-                data.event_type = MOUSE_LEFT_UP;
+                event_type = MOUSE_LEFT_UP;
+                printf("Left Up - ");
                 break;
                 
             case WM_RBUTTONDOWN:
-                data.event_type = MOUSE_RIGHT_DOWN;
+                event_type = MOUSE_RIGHT_DOWN;
+                printf("Right Down - ");
                 break;
                 
             case WM_RBUTTONUP:
-                data.event_type = MOUSE_RIGHT_UP;
+                event_type = MOUSE_RIGHT_UP;
+                printf("Right Up - ");
                 break;
                 
             case WM_MBUTTONDOWN:
-                data.event_type = MOUSE_MIDDLE_DOWN;
+                event_type = MOUSE_MIDDLE_DOWN;
+                printf("Middle Down - ");
                 break;
                 
             case WM_MBUTTONUP:
-                data.event_type = MOUSE_MIDDLE_UP;
+                event_type = MOUSE_MIDDLE_UP;
+                printf("Middle Up - ");
                 break;
                 
             case WM_MOUSEWHEEL:
-                data.event_type = MOUSE_SCROLL;
-                // Get scroll delta (positive for scroll up, negative for scroll down)
-                data.scroll_delta = GET_WHEEL_DELTA_WPARAM(hookStruct->mouseData) / WHEEL_DELTA;
+                event_type = MOUSE_SCROLL;
+                scroll_delta = GET_WHEEL_DELTA_WPARAM(hookStruct->mouseData) / WHEEL_DELTA;
+                printf("Scroll (delta: %.2f) - ", scroll_delta);
                 break;
                 
             default:
                 return CallNextHookEx(NULL, nCode, wParam, lParam);
         }
-        
-        // Call the callback with the mouse event data
-        g_callback(data);
+
+        g_callback(x, y, event_type, scroll_delta);
     }
-    
     return CallNextHookEx(NULL, nCode, wParam, lParam);
 }
 
@@ -94,6 +93,7 @@ __declspec(dllexport) void process_events(void) {
 }
 
 __declspec(dllexport) void cleanup_windows(void) {
+    printf("WINDOWS CLEANUP");
     if (g_mouseHook != NULL) {
         UnhookWindowsHookEx(g_mouseHook);
         g_mouseHook = NULL;

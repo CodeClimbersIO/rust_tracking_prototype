@@ -30,6 +30,7 @@ fn main() {
         cc::Build::new()
             .file(&source_path)
             .static_flag(false) // Not a static library
+            .out_dir(&output_dir) // Specify where to put the output
             .compile("WindowsMonitor");
 
         println!("cargo:info=Setting up library paths...");
@@ -40,6 +41,6 @@ fn main() {
 
         // Tell Cargo to rerun if our source changes
         println!("cargo:rerun-if-changed={}", source_path.display());
-        println!("cargo:info=Build script completed successfully");
+        println!("cargo:warning=Build script completed successfully");
     }
 }

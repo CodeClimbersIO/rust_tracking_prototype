@@ -18,14 +18,7 @@ typedef enum {
     MOUSE_SCROLL
 } MouseEventType;
 
-typedef struct {
-    double x;
-    double y;
-    MouseEventType event_type;
-    int scroll_delta;
-} MouseEventData;
-
-typedef void (*MouseCallbackFn)(MouseEventData data);
+typedef void (*MouseCallbackFn)(double x, double y, int event_Type, int delta);
 
 MONITOR_API void initialize_windows(void);
 MONITOR_API void start_mouse_monitoring(MouseCallbackFn callback);
