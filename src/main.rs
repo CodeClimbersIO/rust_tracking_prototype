@@ -1,3 +1,5 @@
+use std::ffi::c_char;
+
 #[repr(i32)]
 #[derive(Debug, Clone, Copy, PartialEq)]
 pub enum MouseEventType {
@@ -40,6 +42,12 @@ extern "C" {
 extern "C" {
     fn initialize_windows();
     fn start_mouse_monitoring(callback: extern "C" fn(f64, f64, i32, i32));
+    fn start_keyboard_monitoring(callback: extern "C" fn(i32));
+    fn start_window_monitoring(callback: extern "C" fn(
+        window_title: *const c_char,
+        window_class: *const c_char, 
+        process_name: *const c_char
+    ));
     fn process_events();
     fn cleanup_windows();
 }
@@ -75,6 +83,37 @@ extern "C" fn mouse_callback(x: f64, y: f64, event_type: i32, scroll_delta: i32)
     }
 }
 
+extern "C" fn keyboard_callback(event_type: i32) {
+    println!("Keyboard pressed {}", event_type);
+}
+
+extern "C" fn window_callback(
+    window_title: *const c_char,
+    window_class: *const c_char,
+    process_name: *const c_char
+) {
+    // Safety: Convert C strings to Rust strings
+    let title = unsafe { 
+        std::ffi::CStr::from_ptr(window_title)
+            .to_string_lossy()
+            .into_owned()
+    };
+    let class = unsafe { 
+        std::ffi::CStr::from_ptr(window_class)
+            .to_string_lossy()
+            .into_owned()
+    };
+    let process = unsafe { 
+        std::ffi::CStr::from_ptr(process_name)
+            .to_string_lossy()
+            .into_owned()
+    };
+
+    println!("Window Focus Changed:");
+    println!("  Title: {}", title);
+    println!("  Class: {}", class);
+    println!("  Process: {}", process);
+}
 fn main() {
     println!("Starting mouse monitoring from Rust...");
 
@@ -91,6 +130,8 @@ fn main() {
 
         // Start monitoring mouse movements
         start_mouse_monitoring(mouse_callback);
+        start_keyboard_monitoring(keyboard_callback);
+        start_window_monitoring(window_callback);
 
         // Main event loop
         println!("Monitoring mouse movements. Press Ctrl+C to exit.");
