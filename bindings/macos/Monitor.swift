@@ -59,16 +59,14 @@ public func startMouseMonitoring(callback: @escaping @convention(c) (Double, Dou
     }
 }
 
-// Keep the enum for internal use
-public enum MouseEventType: Int32 {
-    case mouseMove = 0
-    case mouseLeftDown
-    case mouseLeftUp
-    case mouseRightDown
-    case mouseRightUp
-    case mouseMiddleDown
-    case mouseMiddleUp
-    case mouseScroll
+@_cdecl("start_keyboard_monitoring")
+public func startKeyboardMonitoring(callback: @escaping @convention(c) (Int32) -> Void) {
+    // TODO: Implement keyboard monitoring
+}
+
+@_cdecl("start_window_monitoring")
+public func startWindowMonitoring(callback: @escaping @convention(c) (UnsafePointer<CChar>, UnsafePointer<CChar>, UnsafePointer<CChar>) -> Void) {
+    // TODO: Implement window monitoring
 }
 
 @_cdecl("initialize")
@@ -86,4 +84,8 @@ public func processEvents() {
                                                 dequeue: true) {
         NSApplication.shared.sendEvent(event)
     }
+}
+
+@_cdecl("cleanup")
+public func cleanup() {
 }

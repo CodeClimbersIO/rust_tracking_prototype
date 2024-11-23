@@ -30,11 +30,20 @@ impl MouseEventType {
 }
 
 #[cfg(target_os = "macos")]
-#[link(name = "MouseMonitor")]
+#[link(name = "MacMonitor")]
 extern "C" {
     fn initialize();
     fn start_mouse_monitoring(callback: extern "C" fn(f64, f64, i32, i32));
+    fn start_keyboard_monitoring(callback: extern "C" fn(i32));
+    fn start_window_monitoring(
+        callback: extern "C" fn(
+            window_title: *const c_char,
+            window_class: *const c_char,
+            process_name: *const c_char,
+        ),
+    );
     fn process_events();
+    fn cleanup();
 }
 
 #[cfg(target_os = "windows")]
@@ -43,11 +52,13 @@ extern "C" {
     fn initialize();
     fn start_mouse_monitoring(callback: extern "C" fn(f64, f64, i32, i32));
     fn start_keyboard_monitoring(callback: extern "C" fn(i32));
-    fn start_window_monitoring(callback: extern "C" fn(
-        window_title: *const c_char,
-        window_class: *const c_char, 
-        process_name: *const c_char
-    ));
+    fn start_window_monitoring(
+        callback: extern "C" fn(
+            window_title: *const c_char,
+            window_class: *const c_char,
+            process_name: *const c_char,
+        ),
+    );
     fn process_events();
     fn cleanup();
 }
@@ -90,20 +101,20 @@ extern "C" fn keyboard_callback(event_type: i32) {
 extern "C" fn window_callback(
     window_title: *const c_char,
     window_class: *const c_char,
-    process_name: *const c_char
+    process_name: *const c_char,
 ) {
     // Safety: Convert C strings to Rust strings
-    let title = unsafe { 
+    let title = unsafe {
         std::ffi::CStr::from_ptr(window_title)
             .to_string_lossy()
             .into_owned()
     };
-    let class = unsafe { 
+    let class = unsafe {
         std::ffi::CStr::from_ptr(window_class)
             .to_string_lossy()
             .into_owned()
     };
-    let process = unsafe { 
+    let process = unsafe {
         std::ffi::CStr::from_ptr(process_name)
             .to_string_lossy()
             .into_owned()
@@ -118,7 +129,6 @@ fn main() {
     println!("Starting mouse monitoring from Rust...");
 
     unsafe {
-
         initialize();
 
         // Start monitoring mouse movements
