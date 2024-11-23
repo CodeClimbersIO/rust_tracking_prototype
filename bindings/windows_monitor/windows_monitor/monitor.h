@@ -27,10 +27,10 @@ typedef void (*MouseCallbackFn)(double x, double y, int event_Type, int delta);
 typedef void (*KeyboardCallbackFn)(int event_Type);
 typedef void (*WindowFocusCallbackFn)(const char* window_title, const char* window_class, const char* process_name);
 
-MONITOR_API void initialize_windows(void);
+MONITOR_API void initialize(void);
 MONITOR_API void start_mouse_monitoring(MouseCallbackFn callback);
 MONITOR_API void start_keyboard_monitoring(KeyboardCallbackFn callback);
 MONITOR_API void process_events(void);
-MONITOR_API void cleanup_windows(void);
+MONITOR_API void cleanup(void);
 
 #endif

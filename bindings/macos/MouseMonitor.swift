@@ -71,8 +71,8 @@ public enum MouseEventType: Int32 {
     case mouseScroll
 }
 
-@_cdecl("initialize_cocoa")
-public func initializeCocoa() {
+@_cdecl("initialize")
+public func initialize() {
     // Initialize Cocoa application without activating
     NSApplication.shared.setActivationPolicy(.accessory)
 }

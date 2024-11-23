@@ -32,7 +32,7 @@ impl MouseEventType {
 #[cfg(target_os = "macos")]
 #[link(name = "MouseMonitor")]
 extern "C" {
-    fn initialize_cocoa();
+    fn initialize();
     fn start_mouse_monitoring(callback: extern "C" fn(f64, f64, i32, i32));
     fn process_events();
 }
@@ -40,7 +40,7 @@ extern "C" {
 #[cfg(target_os = "windows")]
 #[link(name = "WindowsMonitor")]
 extern "C" {
-    fn initialize_windows();
+    fn initialize();
     fn start_mouse_monitoring(callback: extern "C" fn(f64, f64, i32, i32));
     fn start_keyboard_monitoring(callback: extern "C" fn(i32));
     fn start_window_monitoring(callback: extern "C" fn(
@@ -49,7 +49,7 @@ extern "C" {
         process_name: *const c_char
     ));
     fn process_events();
-    fn cleanup_windows();
+    fn cleanup();
 }
 
 extern "C" fn mouse_callback(x: f64, y: f64, event_type: i32, scroll_delta: i32) {
@@ -118,15 +118,8 @@ fn main() {
     println!("Starting mouse monitoring from Rust...");
 
     unsafe {
-        #[cfg(target_os = "macos")]
-        {
-            initialize_cocoa();
-        }
 
-        #[cfg(target_os = "windows")]
-        {
-            initialize_windows();
-        }
+        initialize();
 
         // Start monitoring mouse movements
         start_mouse_monitoring(mouse_callback);
@@ -137,8 +130,7 @@ fn main() {
         println!("Monitoring mouse movements. Press Ctrl+C to exit.");
 
         ctrlc::set_handler(|| {
-            #[cfg(target_os = "windows")]
-            cleanup_windows();
+            cleanup();
             std::process::exit(0);
         })
         .expect("Error setting Ctrl-C handler");

@@ -128,7 +128,7 @@ HHOOK g_mouse_hook = NULL;
 HHOOK g_keyboard_hook = NULL;
 HWINEVENTHOOK g_focus_hook = NULL;
 
-__declspec(dllexport) void initialize_windows(void) {
+__declspec(dllexport) void initialize(void) {
 }
 
 // Start monitoring mouse movements
@@ -188,7 +188,7 @@ __declspec(dllexport) void process_events(void) {
     }
 }
 
-__declspec(dllexport) void cleanup_windows(void) {
+__declspec(dllexport) void cleanup(void) {
     printf("WINDOWS CLEANUP");
     if (g_mouse_hook != NULL) {
         UnhookWindowsHookEx(g_mouse_hook);
