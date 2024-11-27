@@ -1,5 +1,6 @@
 /target
 
+.DS_Store
 # Visual Studio files to ignore
 .vs/
 x64/

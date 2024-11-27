@@ -13,37 +13,55 @@ fn main() {
     if target_os == "macos" {
         println!("cargo:info=Building for macOS...");
 
-        let source_file = manifest_dir
-            .join("bindings")
-            .join("macos")
-            .join("Monitor.swift");
+        let source_files = [
+            manifest_dir
+                .join("bindings")
+                .join("macos")
+                .join("Monitor.m"),
+            manifest_dir
+                .join("bindings")
+                .join("macos")
+                .join("Monitor.h"),
+        ];
         let output_dir = manifest_dir.join("bindings").join("macos");
 
-        println!("cargo:info=Source file: {}", source_file.display());
+        println!("cargo:info=Source files: {:?}", source_files);
         println!("cargo:info=Output directory: {}", output_dir.display());
 
-        // Build the Swift code
-        println!("cargo:info=Compiling Swift code...");
-        let status = std::process::Command::new("swiftc")
+        // Build the Objective-C code using clang
+        println!("cargo:info=Compiling Objective-C code...");
+        let status = std::process::Command::new("clang")
             .args(&[
-                source_file.to_str().unwrap(),
-                "-emit-library",
+                "-fobjc-arc", // Enable ARC
+                "-fmodules",  // Enable modules
+                "-framework",
+                "Cocoa",                           // Link Cocoa framework
+                "-dynamiclib",                     // Create dynamic library
+                source_files[0].to_str().unwrap(), // Monitor.m
+                "-I",
+                source_files[1].parent().unwrap().to_str().unwrap(), // Include directory for Monitor.h
                 "-o",
                 output_dir.join("libMacMonitor.dylib").to_str().unwrap(),
             ])
             .status()
-            .expect("Failed to execute swiftc command");
+            .expect("Failed to execute clang command");
 
         if !status.success() {
-            panic!("Swift compilation failed");
+            panic!("Objective-C compilation failed");
         }
 
         println!("cargo:info=Setting up library paths...");
         println!("cargo:rustc-link-search=native={}", output_dir.display());
         println!("cargo:rustc-link-lib=MacMonitor");
 
-        // Tell Cargo to rerun if our Swift source changes
-        println!("cargo:rerun-if-changed={}", source_file.display());
+        // Link against required frameworks
+        println!("cargo:rustc-link-lib=framework=Cocoa");
+        println!("cargo:rustc-link-lib=framework=Foundation");
+
+        // Tell Cargo to rerun if our Objective-C sources change
+        for source_file in &source_files {
+            println!("cargo:rerun-if-changed={}", source_file.display());
+        }
     } else if target_os == "windows" {
         println!("cargo:info=Building for Windows...");
 
