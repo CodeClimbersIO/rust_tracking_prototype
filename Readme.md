@@ -27,7 +27,6 @@ Tracks the current active window
 To run the project in development mode:
    ```bash
    cargo install cargo-watch
-   bash ./scripts/build-mac.sh # build the mac dylib required for macos
    cargo dev
    ```
 
@@ -42,8 +41,7 @@ To run the project in release mode:
 - `src/`: Source code for the project.
   - `main.rs`: Main entry point of the program.
 - `bindings/`: Bindings for the project.
-  - `macos/`: MacOS bindings written in Swift.
-- `scripts/`: Scripts for the project.
-  - `build-mac.sh`: Builds the MacOS dylib.
-
+  - `macos/`: MacOS bindings written in Objective-C.
+  - `windows/`: Windows bindings written in C.
+- `build.rs`: Build the C and Objective-C code for linking in the Rust code.
 
